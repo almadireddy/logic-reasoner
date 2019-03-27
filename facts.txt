@@ -1,4 +1,3 @@
-~NoLeakH1 ~NoLeakH2 NoLeak ~LowTemp ReactorUnitSafe V1 V2 okH1 okH2 l
 ~NoLeak ~LowTemp ReactorUnitSafe
 ~NoLeakH1 ~NoLeakH2 NoLeak
 ~okH1 NoLeakH1
@@ -13,4 +12,3 @@ l ~V2 LowTemp
 okH1
 V1
 ~V2
-ReactorUnitSafe
