@@ -1,9 +1,10 @@
 class Clause:
     def __init__(self, line):
         self.elements = {}
+        self.valid = True
 
         if line == "":
-            self.elements = False
+            self.valid = False
             return
 
         self.string = line.strip()
@@ -18,7 +19,7 @@ class Clause:
 
             if name in self.elements:
                 if self.elements[name] != truth:
-                    self.elements = False
+                    self.valid = False
                     return
                 else:
                     continue
@@ -26,7 +27,13 @@ class Clause:
             self.elements[name] = truth
 
     def __hash__(self):
-        return hash(self.elements)
+        ks = self.elements.keys()
+        ks.sort()
+        string = ""
+        for k in ks:
+            string += k
+            string += str(self.elements[k])
+        return hash(string)
 
     def __cmp__(self, other):
         return cmp(self.elements, other.elements)
@@ -39,7 +46,7 @@ class Clause:
             if self.elements[name] != truth_value:
                 return False
 
-        self.elements[name] = [truth_value, self.count]
+        self.elements[name] = truth_value
         self.count += 1
         return True
 
@@ -51,10 +58,14 @@ class Clause:
                     return True
         return False
 
-# clauses needs to be a list of clauses in the KB, excluding clause to test
+    def is_valid(self):
+        return self.valid
+
+
 class KB:
     def __init__(self, clauses):
         self.clauses = []
+        self.clauseSet = set()
         self.initial_cutoff = 0
         lines = []
 
@@ -64,15 +75,15 @@ class KB:
         for line in lines:  # self.clauses contains first n-1 clauses
             k = Clause(line)
 
-            if k.elements and k not in self.clauses:
-                self.addClause(Clause(line))
+            if k.is_valid() and k not in self.clauses:
+                self.add_clause(Clause(line))
 
         self.initial_cutoff = len(clauses)
 
     def ask(self, clause_to_test):
-        negated = self.negate_clause(clause_to_test)
+        negated = negate_clause(clause_to_test)
         for i in negated:
-            self.addClause(i)
+            self.add_clause(i)
 
         self.initial_cutoff = len(self.clauses)
 
@@ -113,37 +124,39 @@ class KB:
                             string += x + " " if new_elements[x] is True else "~" + x + " "
 
                         new_clause = Clause(string)
-                        if new_clause.elements:
-                            self.addClause(new_clause, current_parent+1, test_parent+1)
+                        if new_clause.is_valid():
+                            self.add_clause(new_clause, current_parent + 1, test_parent + 1)
 
             index += 1
 
         return False
 
-    def addClause(self, clause, parent1=0, parent2=0):
-        if clause not in self.clauses:
+    def add_clause(self, clause, parent1=0, parent2=0):
+        if clause not in self.clauseSet:
             self.clauses.append(clause)
+            self.clauseSet.add(clause)
 
             if parent1 != 0 and parent2 != 0:
                 print str(len(self.clauses)) + ". " + clause.string, "{" + str(parent1) + ", " + str(parent2) + "}"
             else:
                 print str(len(self.clauses)) + ". " + clause.string, "{}"
 
-    # return list of clauses to be added to KB
-    def negate_clause(self, clause_to_negate):
-        clause = clause_to_negate.split()
-        elements = []
-        new_clauses = []
-        for i in clause:
-            if i[0] == '~':
-                elements.append(i[1:])
-            else:
-                elements.append("~" + i)
 
-        for e in elements:
-            new_clauses.append(Clause(e))
+# clauses needs to be a list of clauses in the KB, excluding clause to test
+def negate_clause(clause_to_negate):
+    clause = clause_to_negate.split()
+    elements = []
+    new_clauses = []
+    for i in clause:
+        if i[0] == '~':
+            elements.append(i[1:])
+        else:
+            elements.append("~" + i)
 
-        return new_clauses
+    for e in elements:
+        new_clauses.append(Clause(e))
+
+    return new_clauses
 
 
 def merge_two_dicts(x, y):
