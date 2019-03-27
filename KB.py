@@ -142,7 +142,6 @@ class KB:
                 print str(len(self.clauses)) + ". " + clause.string, "{}"
 
 
-# clauses needs to be a list of clauses in the KB, excluding clause to test
 def negate_clause(clause_to_negate):
     clause = clause_to_negate.split()
     elements = []
